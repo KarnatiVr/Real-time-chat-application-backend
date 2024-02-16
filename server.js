@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { openConnection,closeConnection }= require("./config/db");
-const { registerUser } = require("./CRUD/user");
+const { registerUser, loginUser } = require("./CRUD/user");
 const createUserCollection= require("./collections/userCollection");
 const app = express();
 app.use(cors());
@@ -15,6 +15,13 @@ app.post("/signup", (req, res) => {
     res.send(result);
   });
 });
+
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  loginUser(email, password).then((result) => {
+    res.send(result);
+  });
+})
 
 const PORT = 4000;
 
