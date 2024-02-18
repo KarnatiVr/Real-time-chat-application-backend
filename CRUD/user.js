@@ -18,6 +18,7 @@ async function registerUser(name, email, password) {
       .findOne({ email });
     if (existingUser) {
       console.log("user already exists");
+      console.log("please login");
       return
     }
 
