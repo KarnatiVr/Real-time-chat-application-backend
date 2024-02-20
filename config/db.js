@@ -20,7 +20,8 @@ const client = new MongoClient(uri, {
 // Connect to MongoDB
 async function openConnection() {
   try {
-    await client.connect().then(() => {
+    await client.connect().then((res) => {
+      // console.log(res)
       console.log("Connected successfully to server");
     })
   } catch (error) {
@@ -29,7 +30,11 @@ async function openConnection() {
 }
 
 async function closeConnection() {
-  await client.close();
+
+  await client.close().then(() => {
+    // console.log(res)
+    console.log("Disconnected successfully from server");
+  })
 }
 
 

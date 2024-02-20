@@ -4,6 +4,9 @@ const bodyParser = require("body-parser");
 const { openConnection,closeConnection }= require("./config/db");
 const { registerUser, loginUser } = require("./CRUD/user");
 const createUserCollection= require("./collections/userCollection");
+const createMessageCollection = require("./collections/messageCollection");
+const createChatCollection = require("./collections/chatCollection");
+const { fetchContacts, fetchContactsMatchSearchParams } = require("./CRUD/contacts");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -22,14 +25,31 @@ app.post("/login", (req, res) => {
     res.send(result);
   });
 })
-
+app.post("/fetchContacts", (req, res) => {
+  const { id } = req.body;
+  console.log(id)
+  console.log(req.body);
+  fetchContacts(id).then((result) => {
+    res.send(result);
+  });
+});
+app.post("/fetchContactsMatchSearchParam", (req, res) => {
+  const { searchParam } = req.body;
+  console.log(req.body)
+  console.log(searchParam)
+  fetchContactsMatchSearchParams(searchParam).then((result) => {
+    res.send(result);
+  });
+});
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   await openConnection();
   await createUserCollection();
-  await closeConnection();
+  await createMessageCollection();
+  await createChatCollection();
+  // await closeConnection();
 });
 
 const io = require("socket.io")(server, {

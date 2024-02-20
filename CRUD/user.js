@@ -1,6 +1,4 @@
 const {
-  openConnection,
-  closeConnection,
   client,
   dbName,
 } = require("../config/db");
@@ -9,7 +7,8 @@ const jwt = require("jsonwebtoken");
 const saltRounds=10;
 
 async function registerUser(name, email, password) {
-  await openConnection();
+  console.log("register user called");
+
   console.log(name, email, password);
   try {
     const existingUser = await client
@@ -34,13 +33,11 @@ async function registerUser(name, email, password) {
     return result;
   } catch (error) {
     console.log(error);
-  } finally {
-    await closeConnection();
-  }
+  } 
 }
 
 async function loginUser(email, password) {
-  await openConnection();
+  console.log("login user called");
   try {
     const user = await client
       .db(dbName)
@@ -67,9 +64,7 @@ async function loginUser(email, password) {
 
   } catch (error) {
     console.log(error);
-  } finally {
-    await closeConnection();
-  }
+  } 
 }
 
 module.exports = { registerUser, loginUser };

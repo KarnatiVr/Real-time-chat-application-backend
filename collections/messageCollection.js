@@ -23,6 +23,14 @@ async function createMessageCollection() {
               bsonType: "objectId",
               description: "must be an objectId refers to user model",
             }, // Assuming receiver is ObjectId
+            isRead: {
+              bsonType: "bool",
+              description: "must be a boolean",
+            },
+            createdAt: {
+              bsonType: "date",
+              description: "must be a date",
+            },
           },
         },
       },
