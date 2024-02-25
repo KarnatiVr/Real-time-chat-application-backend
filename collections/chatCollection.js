@@ -34,10 +34,10 @@ async function createChatCollection() {
                 bsonType: "objectId",
               },
             },
-            createdAt: {
-              bsonType: "date",
-              description: "must be a date",
-            },
+            // createdAt: {
+            //   bsonType: "date",
+            //   description: "must be a date",
+            // },
           },
         },
       },

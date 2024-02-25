@@ -7,6 +7,7 @@ const createUserCollection= require("./collections/userCollection");
 const createMessageCollection = require("./collections/messageCollection");
 const createChatCollection = require("./collections/chatCollection");
 const { fetchContacts, fetchContactsMatchSearchParams } = require("./CRUD/contacts");
+const { insertChat } = require("./CRUD/chat");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -30,6 +31,7 @@ app.post("/fetchContacts", (req, res) => {
   console.log(id)
   console.log(req.body);
   fetchContacts(id).then((result) => {
+    // console.log("result", result)
     res.send(result);
   });
 });
@@ -41,6 +43,14 @@ app.post("/fetchContactsMatchSearchParam", (req, res) => {
     res.send(result);
   });
 });
+
+app.post("/createChat", (req, res) => {
+  const { chat_name, users } = req.body;
+  console.log(req.body)
+  insertChat(chat_name, users).then((result) => {
+    res.send(result);
+  })
+})
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {

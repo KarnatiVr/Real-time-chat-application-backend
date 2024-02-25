@@ -26,6 +26,7 @@ async function openConnection() {
     })
   } catch (error) {
     console.log(error);
+    throw Error("Unable to connect to database");
   }
 }
 

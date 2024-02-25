@@ -1,41 +1,36 @@
+const { use } = require("passport");
 const {
   client,
   dbName,
 } = require("../config/db");
-
+const { ObjectId } = require("mongodb");
 async function fetchContacts(id) {
   console.log("fetch contacts called");
 
-  const userId = id;
+  const userId = new ObjectId(id)
+  // console.log(userId)
   try {
-    const contacts = await client
-      .db(dbName)
-      .collection("chats")
-      .aggregate([
-        {
-          $match: {
-            users: userId,
-          },
-        },
-        {
-          $unwind: "$users",
-        },
-        {
-          $match: {
-            users: { $ne: userId },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            contacts: { $addToSet: "$users" },
-          },
-        },
-      ]);
-
+        const chat_records = await client.db(dbName)
+          .collection("chats")
+          .find({
+            users: { $elemMatch: { $eq: userId } },
+          })
+          .toArray();
+      // console.log(chat_records)
+      const chatPromises = chat_records.map(async (chat)=>{
+        return {
+          _id:chat._id,
+          chat_name:chat.chat_name,
+          user: await client.db(dbName).collection("users").findOne({ _id: chat.users[1] }),
+          messages: chat.messages?.length > 0 ? await client.db(dbName).collection("messages").find({ _id: { $in: chat.messages } }).toArray() : [],
+        }
+      })
+      const chats = await Promise.all(chatPromises)
+      // console.log("chats2",chats)
     // Extract the contacts array from the result
-    const contactUserIds = contacts.length > 0 ? contacts[0].contacts : [];
-    return contactUserIds;
+    let chatRecords = chats.length > 0 ? chats : [];
+    // console.log("chat records",chatRecords)
+    return chatRecords;
   } catch (error) {
     console.log(error);
   } 

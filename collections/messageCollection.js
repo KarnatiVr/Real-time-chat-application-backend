@@ -26,11 +26,11 @@ async function createMessageCollection() {
             isRead: {
               bsonType: "bool",
               description: "must be a boolean",
-            },
-            createdAt: {
-              bsonType: "date",
-              description: "must be a date",
-            },
+            }
+            // createdAt: {
+            //   bsonType: "date",
+            //   description: "must be a date",
+            // },
           },
         },
       },
