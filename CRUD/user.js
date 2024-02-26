@@ -3,9 +3,9 @@ const {
   dbName,
 } = require("../config/db");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const saltRounds=10;
-
+const { signJWT, verifyJWT } = require("../utils/jwt.utils");
+const { createSession } = require("../utils/sessions.utils");
 async function registerUser(name, email, password) {
   console.log("register user called");
 
@@ -52,14 +52,23 @@ async function loginUser(email, password) {
       console.log("password is invalid")
       return null;
     }
-     const token = jwt.sign({ userId: user._id }, "Mern-Chat-Application", {
-       expiresIn: "1h",
-     });
+
+
+    const session = await createSession({ userID: user._id, name: user.name, email: user.email });
+    const accesstoken = await signJWT({ userId: user._id },"50s");
+    const refreshtoken = await signJWT({ session: session._id }, "1y");
+
+    const loggedInUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    }
+
      return {
-       _id: user._id,
-       name: user.name,
-       email: user.email,
-       token
+       session: session,
+       loggedInUser: loggedInUser,
+       accesstoken:accesstoken,
+       refreshtoken:refreshtoken
      }
 
   } catch (error) {

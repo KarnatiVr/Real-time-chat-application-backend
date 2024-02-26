@@ -8,10 +8,23 @@ const createMessageCollection = require("./collections/messageCollection");
 const createChatCollection = require("./collections/chatCollection");
 const { fetchContacts, fetchContactsMatchSearchParams } = require("./CRUD/contacts");
 const { insertChat } = require("./CRUD/chat");
+const createSessionCollection = require("./collections/sessionCollection");
+const cookieParser = require("cookie-parser");
+const { verifyJWT } = require("./utils/jwt.utils");
+const { verifyToken } = require("./middlewares/verifyToken");
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.post("/signup", (req, res) => {
   const { name, email, password } = req.body;
@@ -23,10 +36,24 @@ app.post("/signup", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   loginUser(email, password).then((result) => {
-    res.send(result);
+    console.log(result)
+    const { accesstoken, refreshtoken, session, loggedInUser } = result;
+    // res.cookie("accesstoken", accesstoken, {
+    //   httpOnly: true,
+    //   maxAge: 5000000,
+    // })
+    res.cookie("refreshtoken", refreshtoken, {
+      httpOnly: true,
+      maxAge: 3.154e10,
+    });
+    res.cookie("accesstoken", accesstoken, {
+      httpOnly: true,
+      maxAge: 3.154e10,
+    });
+    res.send({ loggedInUser, session });
   });
 })
-app.post("/fetchContacts", (req, res) => {
+app.post("/fetchContacts", verifyToken, (req, res) => {
   const { id } = req.body;
   console.log(id)
   console.log(req.body);
@@ -35,7 +62,8 @@ app.post("/fetchContacts", (req, res) => {
     res.send(result);
   });
 });
-app.post("/fetchContactsMatchSearchParam", (req, res) => {
+
+app.post("/fetchContactsMatchSearchParam",verifyToken, (req, res) => {
   const { searchParam } = req.body;
   console.log(req.body)
   console.log(searchParam)
@@ -44,7 +72,7 @@ app.post("/fetchContactsMatchSearchParam", (req, res) => {
   });
 });
 
-app.post("/createChat", (req, res) => {
+app.post("/createChat",verifyToken, (req, res) => {
   const { chat_name, users } = req.body;
   console.log(req.body)
   insertChat(chat_name, users).then((result) => {
@@ -59,6 +87,7 @@ const server = app.listen(PORT, async () => {
   await createUserCollection();
   await createMessageCollection();
   await createChatCollection();
+  await createSessionCollection();
   // await closeConnection();
 });
 
@@ -71,7 +100,7 @@ const io = require("socket.io")(server, {
 io.on("connection", (socket) => {
   // console.log(socket.id)
   socket.on("message", (data) => {
-    // console.log(data)
+    console.log(data)
     socket.broadcast.emit("server-message", data);
   });
 });
