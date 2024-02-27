@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { openConnection, closeConnection } = require("./config/db");
-const { registerUser, loginUser, getUserInfo } = require("./CRUD/user");
+const { registerUser, loginUser, getUserInfo, LogoutUser } = require("./CRUD/user");
 const createUserCollection = require("./collections/userCollection");
 const createMessageCollection = require("./collections/messageCollection");
 const createChatCollection = require("./collections/chatCollection");
@@ -102,6 +102,16 @@ app.post("/createChat", verifyToken, (req, res) => {
     res.send(result);
   });
 });
+
+app.get("/logout", verifyToken, (req, res) => {
+  LogoutUser(req.userId).then((result) => {
+    if(result){
+      res.clearCookie("accesstoken")
+      res.clearCookie("refreshtoken")
+      res.send(true)
+    }
+  })
+})
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {

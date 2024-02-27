@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
 const saltRounds=10;
 const { signJWT, verifyJWT } = require("../utils/jwt.utils");
-const { createSession } = require("../utils/sessions.utils");
+const { createSession, deleteSession } = require("../utils/sessions.utils");
 async function registerUser(name, email, password) {
   console.log("register user called");
 
@@ -78,6 +78,11 @@ async function loginUser(email, password) {
   } 
 }
 
+
+async function LogoutUser(userId){
+  await deleteSession(userId);
+  return true
+}
 async function getUserInfo(userId){
   const user= await client.db(dbName).collection("users").findOne({_id:new ObjectId(userId)})
   return {
@@ -87,4 +92,4 @@ async function getUserInfo(userId){
   }
 }
 
-module.exports = { registerUser, loginUser, getUserInfo };
+module.exports = { registerUser, loginUser, getUserInfo,LogoutUser };

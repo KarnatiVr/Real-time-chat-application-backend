@@ -1,5 +1,5 @@
 const { client, dbName } = require("../config/db");
-
+const { ObjectId } = require("mongodb"); 
 
 async function createSession({ userID, name, email }) {
     try {
@@ -15,10 +15,10 @@ async function createSession({ userID, name, email }) {
 }
 
 
-async function deleteSession(sessionId) {
+async function deleteSession(userId) {
     try {
-        const session = await client.db(dbName).collection("sessions").deleteOne({ _id: new ObjectId(sessionId) });
-
+        const session = await client.db(dbName).collection("sessions").updateOne({ userID: new ObjectId(userId) }, { $set: { valid: false } });
+        
         return session
     }
     catch (error) {
