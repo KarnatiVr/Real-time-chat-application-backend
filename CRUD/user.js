@@ -2,6 +2,7 @@ const {
   client,
   dbName,
 } = require("../config/db");
+const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
 const saltRounds=10;
 const { signJWT, verifyJWT } = require("../utils/jwt.utils");
@@ -55,8 +56,9 @@ async function loginUser(email, password) {
 
 
     const session = await createSession({ userID: user._id, name: user.name, email: user.email });
-    const accesstoken = await signJWT({ userId: user._id },"50s");
-    const refreshtoken = await signJWT({ session: session._id }, "1y");
+    console.log("session",session)
+    const accesstoken = await signJWT({ userId: user._id },"10s");
+    const refreshtoken = await signJWT({ session: session.insertedId }, "1y");
 
     const loggedInUser = {
       _id: user._id,
@@ -76,4 +78,13 @@ async function loginUser(email, password) {
   } 
 }
 
-module.exports = { registerUser, loginUser };
+async function getUserInfo(userId){
+  const user= await client.db(dbName).collection("users").findOne({_id:new ObjectId(userId)})
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email
+  }
+}
+
+module.exports = { registerUser, loginUser, getUserInfo };

@@ -6,11 +6,17 @@ const verifyToken= (req, res, next) => {
     console.log(accesstoken,refreshtoken)
     if (accesstoken) {
       const payload = verifyJWT(accesstoken);
-      console.log(payload)
-      if (payload!=null) {
-        console.log("payload is not null")
-        req.user = payload;
+      // console.log(payload)
+      if (payload.payload!=null) {
+        // console.log("payload is not null")
+        // console.log("verifyToken",payload.payload.userId);
+        req.userId = payload.payload.userId;
         return next();
+      }
+      else{
+        return res.status(500).json({
+          message: "Token Expired"
+        })
       }
     }
 }

@@ -1,17 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { openConnection,closeConnection }= require("./config/db");
-const { registerUser, loginUser } = require("./CRUD/user");
-const createUserCollection= require("./collections/userCollection");
+const { openConnection, closeConnection } = require("./config/db");
+const { registerUser, loginUser, getUserInfo } = require("./CRUD/user");
+const createUserCollection = require("./collections/userCollection");
 const createMessageCollection = require("./collections/messageCollection");
 const createChatCollection = require("./collections/chatCollection");
-const { fetchContacts, fetchContactsMatchSearchParams } = require("./CRUD/contacts");
+const {
+  fetchContacts,
+  fetchContactsMatchSearchParams,
+} = require("./CRUD/contacts");
 const { insertChat } = require("./CRUD/chat");
 const createSessionCollection = require("./collections/sessionCollection");
 const cookieParser = require("cookie-parser");
 const { verifyJWT } = require("./utils/jwt.utils");
 const { verifyToken } = require("./middlewares/verifyToken");
+const { refreshToken } = require("./middlewares/refreshToken");
 const app = express();
 
 app.use(
@@ -25,7 +29,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 app.post("/signup", (req, res) => {
   const { name, email, password } = req.body;
   registerUser(name, email, password).then((result) => {
@@ -36,7 +39,7 @@ app.post("/signup", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   loginUser(email, password).then((result) => {
-    console.log(result)
+    console.log(result);
     const { accesstoken, refreshtoken, session, loggedInUser } = result;
     // res.cookie("accesstoken", accesstoken, {
     //   httpOnly: true,
@@ -52,33 +55,53 @@ app.post("/login", (req, res) => {
     });
     res.send({ loggedInUser, session });
   });
-})
+});
+app.get("/getUser", verifyToken, (req, res) => {
+  console.log("get User called");
+  console.log("get user", req.userId);
+  getUserInfo(req.userId).then((result) => {
+    console.log("result from get user function", result);
+    res.send(result);
+  });
+});
+app.get("/refreshToken", (req, res) => {
+  refreshToken(req).then((result) => {
+    res.clearCookie("accessToken");
+    
+    res.cookie("accesstoken", result.accesstoken, {
+      httpOnly: true,
+      maxAge: 3.154e10,
+    });
+    res.send(result);
+  });
+});
 app.post("/fetchContacts", verifyToken, (req, res) => {
-  const { id } = req.body;
-  console.log(id)
-  console.log(req.body);
-  fetchContacts(id).then((result) => {
+  // const { id } = req.body;
+  // console.log(id)
+  // console.log(req.body);
+  fetchContacts(req.userId).then((result) => {
     // console.log("result", result)
+
     res.send(result);
   });
 });
 
-app.post("/fetchContactsMatchSearchParam",verifyToken, (req, res) => {
+app.post("/fetchContactsMatchSearchParam", verifyToken, (req, res) => {
   const { searchParam } = req.body;
-  console.log(req.body)
-  console.log(searchParam)
+  console.log(req.body);
+  console.log(searchParam);
   fetchContactsMatchSearchParams(searchParam).then((result) => {
     res.send(result);
   });
 });
 
-app.post("/createChat",verifyToken, (req, res) => {
+app.post("/createChat", verifyToken, (req, res) => {
   const { chat_name, users } = req.body;
-  console.log(req.body)
+  console.log(req.body);
   insertChat(chat_name, users).then((result) => {
     res.send(result);
-  })
-})
+  });
+});
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {
@@ -100,7 +123,7 @@ const io = require("socket.io")(server, {
 io.on("connection", (socket) => {
   // console.log(socket.id)
   socket.on("message", (data) => {
-    console.log(data)
+    console.log(data);
     socket.broadcast.emit("server-message", data);
   });
 });
