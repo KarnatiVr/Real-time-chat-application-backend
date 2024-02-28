@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const saltRounds=10;
 const { signJWT, verifyJWT } = require("../utils/jwt.utils");
 const { createSession, deleteSession } = require("../utils/sessions.utils");
+const { Socket } = require("socket.io");
 async function registerUser(name, email, password) {
   console.log("register user called");
 
@@ -56,7 +57,7 @@ async function loginUser(email, password) {
 
 
     const session = await createSession({ userID: user._id, name: user.name, email: user.email });
-    console.log("session",session)
+    // console.log("session",session)
     const accesstoken = await signJWT({ userId: user._id },"10s");
     const refreshtoken = await signJWT({ session: session.insertedId }, "1y");
 
@@ -66,6 +67,7 @@ async function loginUser(email, password) {
       email: user.email,
     }
 
+    
      return {
        session: session,
        loggedInUser: loggedInUser,

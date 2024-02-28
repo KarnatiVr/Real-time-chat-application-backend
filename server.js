@@ -65,7 +65,7 @@ app.get("/getUser", verifyToken, (req, res) => {
   });
 });
 app.get("/refreshToken", (req, res) => {
-  refreshToken(req).then((result) => {
+  refreshToken(req,res).then((result) => {
     res.clearCookie("accessToken");
     
     res.cookie("accesstoken", result.accesstoken, {
@@ -131,9 +131,15 @@ const io = require("socket.io")(server, {
   },
 });
 io.on("connection", (socket) => {
-  // console.log(socket.id)
-  socket.on("message", (data) => {
-    console.log(data);
-    socket.broadcast.emit("server-message", data);
+  console.log("socket id =>",socket.id)
+  socket.on('online',(userId)=>{
+    socket.join(userId)
+    console.log("online",userId)
+    socket.emit("server-message", "you are online")
+  })
+  socket.on("message", (id,message) => {
+    console.log(id,message);
+    io.to(id).emit("server-message", message);
+    // socket.broadcast.emit("server-message", data);
   });
 });

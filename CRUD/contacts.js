@@ -16,12 +16,16 @@ async function fetchContacts(id) {
             users: { $elemMatch: { $eq: userId } },
           })
           .toArray();
-      // console.log(chat_records)
+      // console.log("chat records =>",chat_records)
       const chatPromises = chat_records.map(async (chat)=>{
+        const otherUserId = String(chat.users[0]) === String(userId) ? chat.users[1] : chat.users[0];
+      //  console.log("chat =>",chat)
+      //   console.log("req user id =>",userId)
+      //   console.log("other user id =>",otherUserId)
         return {
           _id:chat._id,
           chat_name:chat.chat_name,
-          user: await client.db(dbName).collection("users").findOne({ _id: chat.users[1] }),
+          user: await client.db(dbName).collection("users").findOne({ _id: otherUserId }),
           messages: chat.messages?.length > 0 ? await client.db(dbName).collection("messages").find({ _id: { $in: chat.messages } }).toArray() : [],
         }
       })

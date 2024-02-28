@@ -1,9 +1,9 @@
 const { verifyJWT } = require("../utils/jwt.utils");
 
 const verifyToken= (req, res, next) => {
-    console.log("verify token called")
+    // console.log("verify token called")
     const { accesstoken, refreshtoken } = req.cookies;
-    console.log(accesstoken,refreshtoken)
+    // console.log(accesstoken,refreshtoken)
     if (accesstoken) {
       const payload = verifyJWT(accesstoken);
       // console.log(payload)
@@ -18,6 +18,11 @@ const verifyToken= (req, res, next) => {
           message: "Token Expired"
         })
       }
+    }
+    else{
+      return res.status(500).json({
+        message: "Token Not Found"
+      })
     }
 }
 

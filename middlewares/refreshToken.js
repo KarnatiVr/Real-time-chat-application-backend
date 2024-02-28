@@ -2,13 +2,13 @@ const { verifyJWT, signJWT } = require("../utils/jwt.utils");
 const { client, dbName } = require("../config/db");
 const { ObjectId } = require("mongodb");
 
-const refreshToken = async (req) => {
+const refreshToken = async (req,res) => {
   console.log("verify token called");
   const { refreshtoken } = req.cookies;
   console.log( refreshtoken);
   if (refreshtoken) {
     const payload = verifyJWT(refreshtoken);
-    console.log(payload);
+    // console.log(payload);
     if (payload.payload != null) {
       // console.log("payload is not null");
       const sessionId=payload.payload.session
