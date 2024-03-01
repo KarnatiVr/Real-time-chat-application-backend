@@ -2,7 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { openConnection, closeConnection } = require("./config/db");
-const { registerUser, loginUser, getUserInfo, LogoutUser } = require("./CRUD/user");
+const {
+  registerUser,
+  loginUser,
+  getUserInfo,
+  LogoutUser,
+} = require("./CRUD/user");
 const createUserCollection = require("./collections/userCollection");
 const createMessageCollection = require("./collections/messageCollection");
 const createChatCollection = require("./collections/chatCollection");
@@ -16,6 +21,7 @@ const cookieParser = require("cookie-parser");
 const { verifyJWT } = require("./utils/jwt.utils");
 const { verifyToken } = require("./middlewares/verifyToken");
 const { refreshToken } = require("./middlewares/refreshToken");
+const { insertMessage } = require("./CRUD/message");
 const app = express();
 
 app.use(
@@ -57,17 +63,18 @@ app.post("/login", (req, res) => {
   });
 });
 app.get("/getUser", verifyToken, (req, res) => {
-  console.log("get User called");
-  console.log("get user", req.userId);
+  // console.log("get User called");
+  // console.log("get user", req.userId);
   getUserInfo(req.userId).then((result) => {
-    console.log("result from get user function", result);
+    // console.log("result from get user function", result);
+    // console.log('-------------------------------------------------------')
     res.send(result);
   });
 });
 app.get("/refreshToken", (req, res) => {
-  refreshToken(req,res).then((result) => {
+  refreshToken(req, res).then((result) => {
     res.clearCookie("accessToken");
-    
+
     res.cookie("accesstoken", result.accesstoken, {
       httpOnly: true,
       maxAge: 3.154e10,
@@ -105,13 +112,13 @@ app.post("/createChat", verifyToken, (req, res) => {
 
 app.get("/logout", verifyToken, (req, res) => {
   LogoutUser(req.userId).then((result) => {
-    if(result){
-      res.clearCookie("accesstoken")
-      res.clearCookie("refreshtoken")
-      res.send(true)
+    if (result) {
+      res.clearCookie("accesstoken");
+      res.clearCookie("refreshtoken");
+      res.send(true);
     }
-  })
-})
+  });
+});
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {
@@ -131,15 +138,34 @@ const io = require("socket.io")(server, {
   },
 });
 io.on("connection", (socket) => {
-  console.log("socket id =>",socket.id)
-  socket.on('online',(userId)=>{
-    socket.join(userId)
-    console.log("online",userId)
-    socket.emit("server-message", "you are online")
-  })
-  socket.on("message", (id,message) => {
-    console.log(id,message);
-    io.to(id).emit("server-message", message);
-    // socket.broadcast.emit("server-message", data);
+  console.log("user connected");
+  console.log("socket id =>", socket.id);
+
+  //  Join Room
+  socket.on("joinRoom", (data) => {
+    console.log("join room called");
+    console.log(socket.id);
+    console.log(data);
+    socket.join(data);
   });
+
+  socket.on("message", (data) => {
+    console.log(socket.id);
+    console.log(data);
+  });
+
+    socket.on("send-message", (data) => {
+      console.log(socket.id);
+      console.log(data);
+      const clients = io.sockets.adapter.rooms.get(data.sender);
+      console.log("clients =>", clients);
+      const clients2 = io.sockets.adapter.rooms.get(data.receiver);
+      console.log("clients2 =>", clients2);
+      // io.in(data.receiver).fetchSockets().then((result)=>{
+      //   console.log(result)
+      // })
+      socket.in(data.receiver).emit("receive-message", data);
+    });
+
+
 });

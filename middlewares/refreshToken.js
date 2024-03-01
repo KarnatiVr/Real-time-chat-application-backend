@@ -3,9 +3,9 @@ const { client, dbName } = require("../config/db");
 const { ObjectId } = require("mongodb");
 
 const refreshToken = async (req,res) => {
-  console.log("verify token called");
+  // console.log("resfresh token called");
   const { refreshtoken } = req.cookies;
-  console.log( refreshtoken);
+  // console.log( refreshtoken);
   if (refreshtoken) {
     const payload = verifyJWT(refreshtoken);
     // console.log(payload);
@@ -13,7 +13,7 @@ const refreshToken = async (req,res) => {
       // console.log("payload is not null");
       const sessionId=payload.payload.session
       const session = await client.db(dbName).collection("sessions").findOne({ _id: new ObjectId(sessionId) });
-      console.log("session",session);
+      // console.log("session",session);
       if (session?.valid === false) {
         return res.status(500).json({
           message: "Session Expired",
