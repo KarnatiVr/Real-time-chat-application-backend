@@ -26,7 +26,7 @@ async function fetchContacts(id) {
           _id:chat._id,
           chat_name:chat.chat_name,
           user: await client.db(dbName).collection("users").findOne({ _id: otherUserId }),
-          messages: chat.messages?.length > 0 ? await client.db(dbName).collection("messages").find({ _id: { $in: chat.messages } }).toArray() : [],
+          messages: chat.messages?.length > 0 ? (await client.db(dbName).collection("messages").find({ _id: { $in: chat.messages } }).toArray()) : [],
         }
       })
       const chats = await Promise.all(chatPromises)

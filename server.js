@@ -22,6 +22,10 @@ const { verifyJWT } = require("./utils/jwt.utils");
 const { verifyToken } = require("./middlewares/verifyToken");
 const { refreshToken } = require("./middlewares/refreshToken");
 const { insertMessage } = require("./CRUD/message");
+const {
+  getSocketMappedToUser,
+  mapSocketToUser,
+} = require("./utils/socket-users");
 const app = express();
 
 app.use(
@@ -144,8 +148,7 @@ io.on("connection", (socket) => {
   //  Join Room
   socket.on("joinRoom", (data) => {
     console.log("join room called");
-    console.log(socket.id);
-    console.log(data);
+    // console.log(socket.id);
     socket.join(data);
   });
 
@@ -154,18 +157,14 @@ io.on("connection", (socket) => {
     console.log(data);
   });
 
-    socket.on("send-message", (data) => {
-      console.log(socket.id);
-      console.log(data);
-      const clients = io.sockets.adapter.rooms.get(data.sender);
-      console.log("clients =>", clients);
-      const clients2 = io.sockets.adapter.rooms.get(data.receiver);
-      console.log("clients2 =>", clients2);
-      // io.in(data.receiver).fetchSockets().then((result)=>{
-      //   console.log(result)
-      // })
-      socket.in(data.receiver).emit("receive-message", data);
+  socket.on("send-message", (data) => {
+    const { chat_id, sender, receiver, message } = data;
+    console.log(data)
+    insertMessage(chat_id, sender, receiver, message).then((res) => {
+      if (res!==null) {
+        console.log("message saved");
+        io.to(data.receiver).emit("receive-message", {_id:res,...data});
+      }
     });
-
-
+  });
 });

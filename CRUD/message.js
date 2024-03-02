@@ -21,7 +21,7 @@ async function insertMessage(chat_id, sender_id, receiver_id, message) {
         { _id: new ObjectId(chat_id) },
         { $push: { messages: new ObjectId(insertedId) } }
       );
-    return result.insertedId?true:false;
+    return result.insertedId?result.insertedId:null;
   } catch (error) {
     console.log(error);
   }
