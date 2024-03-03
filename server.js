@@ -18,14 +18,10 @@ const {
 const { insertChat } = require("./CRUD/chat");
 const createSessionCollection = require("./collections/sessionCollection");
 const cookieParser = require("cookie-parser");
-const { verifyJWT } = require("./utils/jwt.utils");
 const { verifyToken } = require("./middlewares/verifyToken");
 const { refreshToken } = require("./middlewares/refreshToken");
-const { insertMessage } = require("./CRUD/message");
-const {
-  getSocketMappedToUser,
-  mapSocketToUser,
-} = require("./utils/socket-users");
+const { insertMessage, setReadMessageTrue } = require("./CRUD/message");
+
 const app = express();
 
 app.use(
@@ -123,6 +119,10 @@ app.get("/logout", verifyToken, (req, res) => {
     }
   });
 });
+
+app.post("/read",verifyToken, (req, res)=>{
+
+} )
 const PORT = 4000;
 
 const server = app.listen(PORT, async () => {
@@ -167,4 +167,11 @@ io.on("connection", (socket) => {
       }
     });
   });
+
+
+  socket.on("message-read",(data)=>{
+    setReadMessageTrue(data).then((res)=>{
+      console.log("message status changed")
+    })
+  })
 });

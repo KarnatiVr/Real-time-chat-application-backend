@@ -27,5 +27,15 @@ async function insertMessage(chat_id, sender_id, receiver_id, message) {
   }
 }
 
+async function setReadMessageTrue(chat_id)
+{
+  const chat = await client.db(dbName).collection("chats").findOne({_id:new ObjectId(chat_id)})
+  console.log("chat =>", chat)
+  chat.messages?.map( async (message)=>{
+    console.log("message =>", message)
+    await client.db(dbName).collection("messages").updateOne({_id: message},{$set:{ isRead: true }})
+  })
+}
 
-module.exports = { insertMessage }
+
+module.exports = { insertMessage, setReadMessageTrue }
