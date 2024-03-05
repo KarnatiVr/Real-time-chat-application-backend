@@ -169,8 +169,9 @@ io.on("connection", (socket) => {
   });
 
 
-  socket.on("message-read",(data)=>{
-    setReadMessageTrue(data).then((res)=>{
+  socket.on("message-read",(chat_id,user_id)=>{
+    
+    setReadMessageTrue(chat_id,user_id).then((res)=>{
       console.log("message status changed")
     })
   })

@@ -27,13 +27,19 @@ async function insertMessage(chat_id, sender_id, receiver_id, message) {
   }
 }
 
-async function setReadMessageTrue(chat_id)
+async function setReadMessageTrue(chat_id, user_id)
 {
   const chat = await client.db(dbName).collection("chats").findOne({_id:new ObjectId(chat_id)})
-  console.log("chat =>", chat)
+  // console.log("chat =>", chat)
   chat.messages?.map( async (message)=>{
-    console.log("message =>", message)
-    await client.db(dbName).collection("messages").updateOne({_id: message},{$set:{ isRead: true }})
+    // console.log("message =>", message)
+    await client
+      .db(dbName)
+      .collection("messages")
+      .updateOne(
+        { _id: message, receiver: new ObjectId(user_id) },
+        { $set: { isRead: true } }
+      );
   })
 }
 
